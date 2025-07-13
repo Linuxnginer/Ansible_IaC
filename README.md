@@ -98,7 +98,7 @@ Before deploying the app, make sure port `8080` is open to allow web traffic (re
 Run the following playbook to install and configure the firewall:
 
 ```bash
-ansible-playbook -i hosts open_port.yml
+ansible-playbook -i hosts firewall_port.yml
 ```
 
 This will:
