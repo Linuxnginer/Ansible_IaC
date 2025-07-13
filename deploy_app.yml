@@ -1,0 +1,47 @@
+---
+- name: Deploy Streamlit Microservice App
+  hosts: all
+  become: yes
+
+  vars:
+    app_dir: /opt/streamlit_app
+    app_file: app.py
+    python_packages:
+      - streamlit
+      - yfinance
+      - requests
+
+  tasks:
+
+    - name: Ensure Python 3 and pip are installed
+      package:
+        name:
+          - python3
+          - python3-pip
+        state: present
+
+    - name: Install required Python libraries
+      pip:
+        name: "{{ python_packages }}"
+        executable: pip3
+
+    - name: Create app directory
+      file:
+        path: "{{ app_dir }}"
+        state: directory
+        owner: "{{ ansible_user }}"
+        mode: '0755'
+
+    - name: Copy app.py to target server
+      copy:
+        src: "{{ app_file }}"
+        dest: "{{ app_dir }}/{{ app_file }}"
+        owner: "{{ ansible_user }}"
+        mode: '0644'
+
+    - name: Run Streamlit app in background on port 8080
+      shell: |
+        pkill -f "streamlit run" || true
+        nohup streamlit run {{ app_dir }}/{{ app_file }} --server.port 8080 > {{ app_dir }}/app.log 2>&1 &
+      args:
+        executable: /bin/bash
