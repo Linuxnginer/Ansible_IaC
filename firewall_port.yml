@@ -1,0 +1,28 @@
+---
+- name: Ensure port 8080 is open for Streamlit
+  hosts: all
+  become: yes
+
+  tasks:
+
+    - name: Install firewalld (if not already installed)
+      package:
+        name: firewalld
+        state: present
+
+    - name: Ensure firewalld is running and enabled
+      service:
+        name: firewalld
+        state: started
+        enabled: yes
+
+    - name: Open port 8080/tcp permanently
+      firewalld:
+        port: 8080/tcp
+        permanent: yes
+        state: enabled
+        immediate: yes
+
+    - name: Reload firewalld to apply changes
+      command: firewall-cmd --reload
+      when: ansible_facts.services['firewalld'].state == 'running'
